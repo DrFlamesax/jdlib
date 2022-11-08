@@ -2,6 +2,7 @@ package com.emaraic.jdlib;
 
 import com.emaraic.utils.FaceDescriptor;
 import com.emaraic.utils.Image;
+
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -10,13 +11,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
- *
- * @author Taha Emara 
- * Website: http://www.emaraic.com 
+ * @author Taha Emara
+ * Website: http://www.emaraic.com
  * Email : taha@emaraic.com
  * Created on: Nov 21, 2020
  */
@@ -97,37 +97,43 @@ public class Jdlib {
         }
     }
 
-    public ArrayList<Rectangle> detectFace(BufferedImage img) {
+    public Optional<ArrayList<Rectangle>> detectFace(BufferedImage img) {
         Image image = new Image(img);
-        ArrayList<Rectangle> data = faceDetect(getFaceDectorHandler(), image.pixels, image.height, image.width);
-        if (data == null) {
-            System.err.println("Jdlib | detectFace | Null data!!");
-            data = new ArrayList<>(Collections.EMPTY_LIST);
-        }
-        return data;
+        return detectFace(image.pixels, image.height, image.width);
     }
 
-    public ArrayList<FaceDescriptor> getFaceLandmarks(BufferedImage img) {
-        Image image = new Image(img);
-        ArrayList<FaceDescriptor> data = getFacialLandmarks(getShapePredictorHandler(facialLandmarksModelPath), getFaceDectorHandler(), image.pixels, image.height, image.width);
-        if (data == null) {
-            System.err.println("Jdlib | getFaceLandmarks | Null data!!");
-            data = new ArrayList<>(Collections.EMPTY_LIST);
-        }
-        return data;
+    public Optional<ArrayList<Rectangle>> detectFace(byte[] pixels, int height, int width) {
+        ArrayList<Rectangle> data = faceDetect(getFaceDectorHandler(), pixels, height, width);
+        return Optional.ofNullable(data);
     }
 
-    public ArrayList<FaceDescriptor> getFaceEmbeddings(BufferedImage img) {
+    public Optional<ArrayList<FaceDescriptor>> getFaceLandmarks(BufferedImage img) {
+        Image image = new Image(img);
+        return getFaceLandmarks(image.pixels, image.height, image.width);
+    }
+
+    public Optional<ArrayList<FaceDescriptor>> getFaceLandmarks(byte[] pixels, int height, int width) {
+        ArrayList<FaceDescriptor> data = getFacialLandmarks(getShapePredictorHandler(facialLandmarksModelPath),
+                getFaceDectorHandler(), pixels, height, width);
+        return Optional.ofNullable(data);
+    }
+
+    public Optional<ArrayList<FaceDescriptor>> getFaceEmbeddings(BufferedImage img) {
         if (facialLandmarksModelPath == null) {
             throw new IllegalArgumentException("Path to face embedding model isn't provided!");
         }
-        
+
         Image image = new Image(img);
-        ArrayList<FaceDescriptor> data = getFaceEmbeddings(getFaceEmbeddingHandler(faceEmbeddingModelPath), getShapePredictorHandler(facialLandmarksModelPath), getFaceDectorHandler(), image.pixels, image.height, image.width);
-        if (data == null) {
-            System.err.println("Jdlib | getFaceEmbeddings | Null data!!");
-            data = new ArrayList<>(Collections.EMPTY_LIST);
+        return getFaceEmbeddings(image.pixels, image.height, image.width);
+    }
+
+    public Optional<ArrayList<FaceDescriptor>> getFaceEmbeddings(byte[] pixels, int height, int width) {
+        if (facialLandmarksModelPath == null) {
+            throw new IllegalArgumentException("Path to face embedding model isn't provided!");
         }
-        return data;
+
+        ArrayList<FaceDescriptor> data = getFaceEmbeddings(getFaceEmbeddingHandler(faceEmbeddingModelPath),
+                getShapePredictorHandler(facialLandmarksModelPath), getFaceDectorHandler(), pixels, height, width);
+        return Optional.ofNullable(data);
     }
 }
